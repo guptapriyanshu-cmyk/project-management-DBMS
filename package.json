@@ -2,7 +2,7 @@
   "name": "grocery-store-dbms",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
+    "build": "cd frontend && npm install && npm run build && cd .. && rm -rf dist && cp -r frontend/dist dist",
     "start": "cd backend && npm start"
   },
   "dependencies": {
