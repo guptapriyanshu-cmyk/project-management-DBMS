@@ -4,6 +4,9 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import Customers from './pages/Customers';
+import Suppliers from './pages/Suppliers';
+import Sales from './pages/Sales';
 import HomePage from './pages/HomePage';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -89,6 +92,9 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/sales" element={<Sales />} />
           <Route path="*" element={<div className="flex h-full items-center justify-center text-gray-400">Page under construction...</div>} />
         </Routes>
       </Layout>
