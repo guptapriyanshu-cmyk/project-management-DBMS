@@ -73,3 +73,4 @@ const Modal = ({ isOpen, onClose, onSubmit, title, fields }: ModalProps) => {
 };
 
 export default Modal;
+

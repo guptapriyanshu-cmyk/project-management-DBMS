@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { Search, Filter, Edit2, Trash2, Plus } from 'lucide-react';
+import { Search, Edit2, Trash2, Plus } from 'lucide-react';
 
 import Modal from '../components/Modal';
 
