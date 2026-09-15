@@ -8,4 +8,5 @@ const productSchema = new mongoose.Schema({
   supplier: { type: String, required: true },
 }, { timestamps: true });
 
-export default mongoose.models.Product || mongoose.model('Product', productSchema);
+const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
+export default Product as mongoose.Model<any>;
