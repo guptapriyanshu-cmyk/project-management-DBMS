@@ -1,41 +1,32 @@
-# GroceryStore Product Management
+# React + TypeScript + Vite
 
-A full-stack product management system for a retail and wholesale grocery store.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-## Tech Stack
-- **Frontend**: React (Vite), TypeScript, Tailwind CSS, GSAP (Animations), Lucide React (Icons).
-- **Backend**: Node.js, Express, Mongoose, TypeScript.
+Currently, two official plugins are available:
 
-## Folder Structure
-- `/frontend` - Contains the React application with beautiful UI and GSAP animations.
-- `/backend` - Contains the Express server with MongoDB setup.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## How to Run
+## React Compiler
 
-### 1. Backend
-Open a terminal and navigate to the backend directory:
-```bash
-cd backend
-npm install
-npm run start
-# Note: You need to set up your MongoDB URI in a .env file (e.g. MONGO_URI=mongodb://localhost:27017/grocery_db)
-```
-*(You can compile it using `npx tsc` and run the output, or add a dev script like `ts-node-dev` if you plan to develop further)*
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-### 2. Frontend
-Open another terminal and navigate to the frontend directory:
-```bash
-cd frontend
-npm install
-npm run dev
-```
+## Expanding the Oxlint configuration
 
-Visit `http://localhost:5173` to see the animated UI.
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
 
-## Adding Database (MongoDB)
-The backend is already pre-configured to use Mongoose. You can simply add your MongoDB connection string to a `.env` file in the `backend/` directory:
-```
-MONGO_URI=your_mongodb_connection_string_here
-PORT=5000
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
 ```
 
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
