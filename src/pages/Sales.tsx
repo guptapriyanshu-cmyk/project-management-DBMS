@@ -15,59 +15,22 @@ interface Sale {
 }
 
 const Sales = () => {
-  const [sales, setSales] = useState<Sale[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sales, setSales] = useState<Sale[]>([
+    { id: '1', orderId: 'ORD-8901', customerName: 'Rahul Sharma', amount: 1250.50, date: '2026-09-15', status: 'Completed' },
+  ]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-  useEffect(() => {
-    fetchSales();
-  }, []);
-
-  const fetchSales = async () => {
-    try {
-      const res = await fetch(`${API_URL}/sales`);
-      if (!res.ok) throw new Error('Network response was not ok');
-      const data = await res.json();
-      setSales(data);
-    } catch (error) {
-      console.error('Error fetching sales:', error);
-      // Fallback
-      setSales([
-        { id: '1', orderId: 'ORD-8901', customerName: 'Rahul Sharma', amount: 1250.50, date: '2026-09-15', status: 'Completed' },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+  const handleAddSale = (data: any) => {
+    setSales([...sales, { ...data, id: Date.now().toString(), orderId: data.orderId || 'ORD-' + Math.floor(Math.random() * 10000), date: new Date().toISOString().split('T')[0], status: 'Completed' }]);
   };
 
-  const handleAddSale = async (data: any) => {
-    try {
-      const res = await fetch(`${API_URL}/sales`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, orderId: data.orderId || 'ORD-' + Math.floor(Math.random() * 10000), date: new Date().toISOString().split('T')[0], status: 'Completed' })
-      });
-      if (res.ok) fetchSales();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const deleteSale = async (id: string) => {
-    try {
-      await fetch(`${API_URL}/sales/${id}`, { method: 'DELETE' });
-      fetchSales();
-    } catch (e) {
-      console.error(e);
-    }
+  const deleteSale = (id: string) => {
+    setSales(sales.filter(s => s.id !== id && (s as any)._id !== id));
   };
 
   useEffect(() => {
-    if (loading) return;
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
         { y: -20, opacity: 0 },
@@ -88,7 +51,7 @@ const Sales = () => {
         );
       }
     }
-  }, [sales]);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -130,9 +93,7 @@ const Sales = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {loading ? (
-                <tr><td colSpan={6} className="p-8 text-center text-gray-400">Loading sales from Database...</td></tr>
-              ) : sales.length === 0 ? (
+              {sales.length === 0 ? (
                 <tr><td colSpan={6} className="p-8 text-center text-gray-400">No sales found. Add some!</td></tr>
               ) : (
                 sales.map((sale: any) => (

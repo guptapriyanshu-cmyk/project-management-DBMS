@@ -12,43 +12,11 @@ const Dashboard = () => {
     );
   }, []);
 
-  const [statsData, setStatsData] = useState({ revenue: 0, products: 0, customers: 0, salesCount: 0 });
-  const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const [productsRes, customersRes, salesRes] = await Promise.all([
-        fetch(`${API_URL}/products`),
-        fetch(`${API_URL}/customers`),
-        fetch(`${API_URL}/sales`)
-      ]);
-      const products = await productsRes.json();
-      const customers = await customersRes.json();
-      const sales = await salesRes.json();
-      
-      const totalRevenue = sales.reduce((sum: number, sale: any) => sum + sale.amount, 0);
-
-      setStatsData({
-        revenue: totalRevenue,
-        products: products.length,
-        customers: customers.length,
-        salesCount: sales.length
-      });
-    } catch (e) {
-      console.error(e);
-      setStatsData({ revenue: 45231, products: 1204, customers: 8439, salesCount: 432 });
-    }
-  };
-
   const stats = [
-    { label: 'Total Revenue', value: `₹${statsData.revenue.toLocaleString()}`, icon: <IndianRupee size={24} />, color: 'bg-emerald-500', trend: '+12.5%' },
-    { label: 'Total Products', value: statsData.products.toLocaleString(), icon: <Package size={24} />, color: 'bg-blue-500', trend: '+3.2%' },
-    { label: 'Total Customers', value: statsData.customers.toLocaleString(), icon: <Users size={24} />, color: 'bg-purple-500', trend: '+8.1%' },
-    { label: 'Total Sales', value: statsData.salesCount.toLocaleString(), icon: <Activity size={24} />, color: 'bg-orange-500', trend: '+5.4%' },
+    { label: 'Total Revenue', value: '₹45,231', icon: <IndianRupee size={24} />, color: 'bg-emerald-500', trend: '+12.5%' },
+    { label: 'Total Products', value: '1,204', icon: <Package size={24} />, color: 'bg-blue-500', trend: '+3.2%' },
+    { label: 'Total Customers', value: '8,439', icon: <Users size={24} />, color: 'bg-purple-500', trend: '+8.1%' },
+    { label: 'Total Sales', value: '432', icon: <Activity size={24} />, color: 'bg-orange-500', trend: '+5.4%' },
   ];
 
   return (

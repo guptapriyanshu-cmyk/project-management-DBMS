@@ -14,55 +14,23 @@ interface Customer {
 }
 
 const Customers = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [customers, setCustomers] = useState<Customer[]>([
+    { id: '1', name: 'Rahul Sharma', email: 'rahul.s@example.com', phone: '+91 9876543210', loyaltyPoints: 450, status: 'Active' },
+    { id: '2', name: 'Priya Patel', email: 'priya.p@example.com', phone: '+91 9876543211', loyaltyPoints: 120, status: 'Active' },
+  ]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
-  
-  const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const fetchCustomers = async () => {
-    try {
-      const res = await fetch(`${API_URL}/customers`);
-      if (!res.ok) throw new Error('Network response was not ok');
-      const data = await res.json();
-      setCustomers(data);
-    } catch (error) {
-      console.error('Error fetching customers:', error);
-    } finally {
-      setLoading(false);
-    }
+  const handleAddCustomer = (data: any) => {
+    setCustomers([...customers, { ...data, id: Date.now().toString(), status: 'Active' }]);
   };
 
-  const handleAddCustomer = async (data: any) => {
-    try {
-      const res = await fetch(`${API_URL}/customers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, loyaltyPoints: data.loyaltyPoints || 0, status: 'Active' })
-      });
-      if (res.ok) fetchCustomers();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const deleteCustomer = async (id: string) => {
-    try {
-      await fetch(`${API_URL}/customers/${id}`, { method: 'DELETE' });
-      fetchCustomers();
-    } catch (e) {
-      console.error(e);
-    }
+  const deleteCustomer = (id: string) => {
+    setCustomers(customers.filter(c => c.id !== id && (c as any)._id !== id));
   };
 
   useEffect(() => {
-    if (loading) return;
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
         { y: -20, opacity: 0 },
@@ -83,7 +51,7 @@ const Customers = () => {
         );
       }
     }
-  }, [customers]);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -122,9 +90,7 @@ const Customers = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {loading ? (
-                <tr><td colSpan={6} className="p-8 text-center text-gray-400">Loading customers from Database...</td></tr>
-              ) : customers.length === 0 ? (
+              {customers.length === 0 ? (
                 <tr><td colSpan={6} className="p-8 text-center text-gray-400">No customers found. Add some!</td></tr>
               ) : (
                 customers.map((customer: any) => (

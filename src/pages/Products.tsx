@@ -14,57 +14,24 @@ interface Product {
 }
 
 const Products = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([
+    { _id: '1', name: 'Organic Apples', category: 'Fruits', price: 120, stock: 150, supplier: 'Green Farms' },
+    { _id: '2', name: 'Whole Wheat Bread', category: 'Bakery', price: 40, stock: 45, supplier: 'Daily Bake' },
+    { _id: '3', name: 'Almond Milk', category: 'Dairy', price: 150, stock: 80, supplier: 'Nutty Co.' },
+  ]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch(`${API_URL}/products`);
-      if (!res.ok) throw new Error('Network response was not ok');
-      const data = await res.json();
-      setProducts(data);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      setLoading(false);
-    }
+  const handleAddProduct = (data: any) => {
+    setProducts([...products, { ...data, _id: Date.now().toString() }]);
   };
 
-  const handleAddProduct = async (data: any) => {
-    try {
-      const res = await fetch(`${API_URL}/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (res.ok) {
-        fetchProducts();
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const deleteProduct = async (id: string) => {
-    try {
-      await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
-      fetchProducts();
-    } catch (e) {
-      console.error(e);
-    }
+  const deleteProduct = (id: string) => {
+    setProducts(products.filter(p => p._id !== id));
   };
 
   useEffect(() => {
-    if (loading) return;
     
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
@@ -86,7 +53,7 @@ const Products = () => {
         );
       }
     }
-  }, [loading]);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -128,9 +95,7 @@ const Products = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {loading ? (
-                <tr><td colSpan={6} className="p-8 text-center text-gray-400">Loading products from Database...</td></tr>
-              ) : products.length === 0 ? (
+              {products.length === 0 ? (
                 <tr><td colSpan={6} className="p-8 text-center text-gray-400">No products found. Add some!</td></tr>
               ) : (
                 products.map((product) => (

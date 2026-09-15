@@ -15,60 +15,23 @@ interface Supplier {
 }
 
 const Suppliers = () => {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([
+    { id: '1', companyName: 'Green Farms Ltd', contactPerson: 'Ramesh Singh', category: 'Fruits & Veg', rating: 4.8, deliveryTime: '24 hrs' },
+    { id: '2', companyName: 'Daily Bake', contactPerson: 'Sunita Sharma', category: 'Bakery', rating: 4.5, deliveryTime: '12 hrs' },
+  ]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-  useEffect(() => {
-    fetchSuppliers();
-  }, []);
-
-  const fetchSuppliers = async () => {
-    try {
-      const res = await fetch(`${API_URL}/suppliers`);
-      if (!res.ok) throw new Error('Network response was not ok');
-      const data = await res.json();
-      setSuppliers(data);
-    } catch (error) {
-      console.error('Error fetching suppliers:', error);
-      // Fallback
-      setSuppliers([
-        { id: '1', companyName: 'Green Farms Ltd', contactPerson: 'Ramesh Singh', category: 'Fruits & Veg', rating: 4.8, deliveryTime: '24 hrs' },
-        { id: '2', companyName: 'Daily Bake', contactPerson: 'Sunita Sharma', category: 'Bakery', rating: 4.5, deliveryTime: '12 hrs' },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+  const handleAddSupplier = (data: any) => {
+    setSuppliers([...suppliers, { ...data, id: Date.now().toString(), rating: data.rating || 5.0 }]);
   };
 
-  const handleAddSupplier = async (data: any) => {
-    try {
-      const res = await fetch(`${API_URL}/suppliers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, rating: data.rating || 5.0 })
-      });
-      if (res.ok) fetchSuppliers();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const deleteSupplier = async (id: string) => {
-    try {
-      await fetch(`${API_URL}/suppliers/${id}`, { method: 'DELETE' });
-      fetchSuppliers();
-    } catch (e) {
-      console.error(e);
-    }
+  const deleteSupplier = (id: string) => {
+    setSuppliers(suppliers.filter(s => s.id !== id && (s as any)._id !== id));
   };
 
   useEffect(() => {
-    if (loading) return;
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
         { y: -20, opacity: 0 },
@@ -89,7 +52,7 @@ const Suppliers = () => {
         );
       }
     }
-  }, [suppliers]);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -128,9 +91,7 @@ const Suppliers = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {loading ? (
-                <tr><td colSpan={6} className="p-8 text-center text-gray-400">Loading suppliers from Database...</td></tr>
-              ) : suppliers.length === 0 ? (
+              {suppliers.length === 0 ? (
                 <tr><td colSpan={6} className="p-8 text-center text-gray-400">No suppliers found. Add some!</td></tr>
               ) : (
                 suppliers.map((supplier: any) => (
