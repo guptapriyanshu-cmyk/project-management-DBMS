@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { Search, Filter, Eye, Download } from 'lucide-react';
+import { Search, Eye, Download, Plus, Trash2 } from 'lucide-react';
+
+import Modal from '../components/Modal';
 
 interface Sale {
-  id: string;
+  id?: string;
+  _id?: string;
   orderId: string;
   customerName: string;
   amount: number;
@@ -13,22 +16,58 @@ interface Sale {
 
 const Sales = () => {
   const [sales, setSales] = useState<Sale[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Mock data for sales
-    setSales([
-      { id: '1', orderId: 'ORD-8901', customerName: 'Rahul Sharma', amount: 1250.50, date: '2026-09-15', status: 'Completed' },
-      { id: '2', orderId: 'ORD-8902', customerName: 'Amit Kumar', amount: 340.00, date: '2026-09-15', status: 'Processing' },
-      { id: '3', orderId: 'ORD-8903', customerName: 'Priya Patel', amount: 890.75, date: '2026-09-14', status: 'Completed' },
-      { id: '4', orderId: 'ORD-8904', customerName: 'Sneha Gupta', amount: 45.00, date: '2026-09-14', status: 'Refunded' },
-      { id: '5', orderId: 'ORD-8905', customerName: 'Vikram Singh', amount: 2100.00, date: '2026-09-13', status: 'Completed' },
-      { id: '6', orderId: 'ORD-8906', customerName: 'John Doe', amount: 150.25, date: '2026-09-13', status: 'Completed' },
-    ]);
-  }, []);
+  const API_URL = import.meta.env.VITE_API_URL || '/api';
 
   useEffect(() => {
+    fetchSales();
+  }, []);
+
+  const fetchSales = async () => {
+    try {
+      const res = await fetch(`${API_URL}/sales`);
+      if (!res.ok) throw new Error('Network response was not ok');
+      const data = await res.json();
+      setSales(data);
+    } catch (error) {
+      console.error('Error fetching sales:', error);
+      // Fallback
+      setSales([
+        { id: '1', orderId: 'ORD-8901', customerName: 'Rahul Sharma', amount: 1250.50, date: '2026-09-15', status: 'Completed' },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddSale = async (data: any) => {
+    try {
+      const res = await fetch(`${API_URL}/sales`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, orderId: data.orderId || 'ORD-' + Math.floor(Math.random() * 10000), date: new Date().toISOString().split('T')[0], status: 'Completed' })
+      });
+      if (res.ok) fetchSales();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteSale = async (id: string) => {
+    try {
+      await fetch(`${API_URL}/sales/${id}`, { method: 'DELETE' });
+      fetchSales();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    if (loading) return;
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
         { y: -20, opacity: 0 },
@@ -68,10 +107,11 @@ const Sales = () => {
             />
           </div>
           <button className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
-            <Filter size={20} />
-          </button>
-          <button className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
             <Download size={20} />
+          </button>
+          <button onClick={() => setIsModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all font-medium flex items-center space-x-2 transform hover:-translate-y-0.5">
+            <Plus size={18} />
+            <span>Add Sale</span>
           </button>
         </div>
       </div>
@@ -90,28 +130,45 @@ const Sales = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {sales.map((sale) => (
-                <tr key={sale.id} className="border-b border-gray-50 hover:bg-emerald-50/50 transition-colors group">
-                  <td className="p-4 font-medium text-gray-800">{sale.orderId}</td>
-                  <td className="p-4 text-gray-600">{sale.customerName}</td>
-                  <td className="p-4 text-gray-600 font-semibold">₹{sale.amount.toFixed(2)}</td>
-                  <td className="p-4 text-gray-500">{sale.date}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded-md text-xs font-medium ${sale.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : sale.status === 'Processing' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
-                      {sale.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"><Eye size={16} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {loading ? (
+                <tr><td colSpan={6} className="p-8 text-center text-gray-400">Loading sales from Database...</td></tr>
+              ) : sales.length === 0 ? (
+                <tr><td colSpan={6} className="p-8 text-center text-gray-400">No sales found. Add some!</td></tr>
+              ) : (
+                sales.map((sale: any) => (
+                  <tr key={sale._id || sale.id} className="border-b border-gray-50 hover:bg-emerald-50/50 transition-colors group">
+                    <td className="p-4 font-medium text-gray-800">{sale.orderId}</td>
+                    <td className="p-4 text-gray-600">{sale.customerName}</td>
+                    <td className="p-4 text-gray-600 font-semibold">₹{sale.amount.toFixed(2)}</td>
+                    <td className="p-4 text-gray-500">{sale.date}</td>
+                    <td className="p-4">
+                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${sale.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : sale.status === 'Processing' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
+                        {sale.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"><Eye size={16} /></button>
+                        <button onClick={() => deleteSale(sale._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
+      <Modal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddSale}
+        title="Record New Sale"
+        fields={[
+          { name: 'customerName', label: 'Customer Name', type: 'text' },
+          { name: 'amount', label: 'Order Amount (₹)', type: 'number' },
+        ]}
+      />
     </div>
   );
 };
