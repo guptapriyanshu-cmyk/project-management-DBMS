@@ -10,3 +10,4 @@ const saleSchema = new mongoose.Schema({
 
 const Sale = mongoose.models.Sale || mongoose.model('Sale', saleSchema);
 export default Sale as mongoose.Model<any>;
+

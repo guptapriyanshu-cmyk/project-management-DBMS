@@ -10,3 +10,4 @@ const supplierSchema = new mongoose.Schema({
 
 const Supplier = mongoose.models.Supplier || mongoose.model('Supplier', supplierSchema);
 export default Supplier as mongoose.Model<any>;
+

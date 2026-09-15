@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Plus, Search, Filter, Edit2, Trash2 } from 'lucide-react';
 
+import Modal from '../components/Modal';
+
 interface Product {
   _id?: string;
   name: string;
@@ -14,6 +16,7 @@ interface Product {
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
@@ -31,29 +34,17 @@ const Products = () => {
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
-      setProducts([
-        { _id: '1', name: 'Organic Apples', category: 'Fruits', price: 120, stock: 150, supplier: 'Green Farms' },
-        { _id: '2', name: 'Whole Wheat Bread', category: 'Bakery', price: 40, stock: 45, supplier: 'Daily Bake' },
-        { _id: '3', name: 'Almond Milk', category: 'Dairy', price: 150, stock: 80, supplier: 'Nutty Co.' },
-      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const addDummyProduct = async () => {
+  const handleAddProduct = async (data: any) => {
     try {
-      const dummy = {
-        name: 'New Product ' + Math.floor(Math.random() * 100),
-        category: 'Misc',
-        price: 99,
-        stock: 50,
-        supplier: 'Test Supplier'
-      };
       const res = await fetch(`${API_URL}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dummy)
+        body: JSON.stringify(data)
       });
       if (res.ok) {
         fetchProducts();
@@ -116,7 +107,7 @@ const Products = () => {
           <button className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
             <Filter size={20} />
           </button>
-          <button onClick={addDummyProduct} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all font-medium flex items-center space-x-2 transform hover:-translate-y-0.5">
+          <button onClick={() => setIsModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all font-medium flex items-center space-x-2 transform hover:-translate-y-0.5">
             <Plus size={18} />
             <span>Add Product</span>
           </button>
@@ -168,6 +159,19 @@ const Products = () => {
           </table>
         </div>
       </div>
+      <Modal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddProduct}
+        title="Add New Product"
+        fields={[
+          { name: 'name', label: 'Product Name', type: 'text' },
+          { name: 'category', label: 'Category', type: 'text' },
+          { name: 'price', label: 'Price (₹)', type: 'number' },
+          { name: 'stock', label: 'Stock Quantity', type: 'number' },
+          { name: 'supplier', label: 'Supplier Name', type: 'text' },
+        ]}
+      />
     </div>
   );
 };

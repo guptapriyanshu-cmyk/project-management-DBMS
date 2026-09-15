@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Search, Filter, Edit2, Trash2, Plus } from 'lucide-react';
 
+import Modal from '../components/Modal';
+
 interface Customer {
   id: string;
   name: string;
@@ -14,6 +16,7 @@ interface Customer {
 const Customers = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   
@@ -31,29 +34,17 @@ const Customers = () => {
       setCustomers(data);
     } catch (error) {
       console.error('Error fetching customers:', error);
-      // Fallback dummy data if DB is empty/fails
-      setCustomers([
-        { id: '1', name: 'Rahul Sharma', email: 'rahul.s@example.com', phone: '+91 9876543210', loyaltyPoints: 450, status: 'Active' },
-        { id: '2', name: 'Priya Patel', email: 'priya.p@example.com', phone: '+91 9876543211', loyaltyPoints: 120, status: 'Active' },
-      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const addDummyCustomer = async () => {
+  const handleAddCustomer = async (data: any) => {
     try {
-      const dummy = {
-        name: 'New Customer ' + Math.floor(Math.random() * 100),
-        email: 'customer@example.com',
-        phone: '+91 0000000000',
-        loyaltyPoints: 100,
-        status: 'Active'
-      };
       const res = await fetch(`${API_URL}/customers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dummy)
+        body: JSON.stringify({ ...data, loyaltyPoints: data.loyaltyPoints || 0, status: 'Active' })
       });
       if (res.ok) fetchCustomers();
     } catch (e) {
@@ -110,7 +101,7 @@ const Customers = () => {
               className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 focus:bg-white transition-colors"
             />
           </div>
-          <button onClick={addDummyCustomer} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all font-medium flex items-center space-x-2 transform hover:-translate-y-0.5">
+          <button onClick={() => setIsModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all font-medium flex items-center space-x-2 transform hover:-translate-y-0.5">
             <Plus size={18} />
             <span>Add Customer</span>
           </button>
@@ -160,6 +151,18 @@ const Customers = () => {
           </table>
         </div>
       </div>
+      <Modal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddCustomer}
+        title="Add New Customer"
+        fields={[
+          { name: 'name', label: 'Full Name', type: 'text' },
+          { name: 'email', label: 'Email Address', type: 'email' },
+          { name: 'phone', label: 'Phone Number', type: 'text' },
+          { name: 'loyaltyPoints', label: 'Initial Points', type: 'number' },
+        ]}
+      />
     </div>
   );
 };
