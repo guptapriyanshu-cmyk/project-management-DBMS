@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { Package, Users, ArrowUpRight, IndianRupee, Activity } from 'lucide-react';
 
