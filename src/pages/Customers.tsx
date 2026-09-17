@@ -14,23 +14,47 @@ interface Customer {
 }
 
 const Customers = () => {
-  const [customers, setCustomers] = useState<Customer[]>([
-    { id: '1', name: 'Rahul Sharma', email: 'rahul.s@example.com', phone: '+91 9876543210', loyaltyPoints: 450, status: 'Active' },
-    { id: '2', name: 'Priya Patel', email: 'priya.p@example.com', phone: '+91 9876543211', loyaltyPoints: 120, status: 'Active' },
-  ]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const handleAddCustomer = (data: any) => {
-    setCustomers([...customers, { ...data, id: Date.now().toString(), status: 'Active' }]);
+  // Fetch customers from MongoDB on load
+  const loadCustomers = async () => {
+    try {
+      const res = await fetch('/api/customers');
+      const data = await res.json();
+      setCustomers(data);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const deleteCustomer = (id: string) => {
-    setCustomers(customers.filter(c => c.id !== id && (c as any)._id !== id));
+  const handleAddCustomer = async (data: any) => {
+    try {
+      const res = await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, status: 'Active' })
+      });
+      const newCustomer = await res.json();
+      setCustomers([...customers, newCustomer]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteCustomer = async (id: string) => {
+    try {
+      await fetch(`/api/customers/${id}`, { method: 'DELETE' });
+      setCustomers(customers.filter(c => (c as any)._id !== id && c.id !== id));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   useEffect(() => {
+    loadCustomers();
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
         { y: -20, opacity: 0 },

@@ -14,24 +14,48 @@ interface Product {
 }
 
 const Products = () => {
-  const [products, setProducts] = useState<Product[]>([
-    { _id: '1', name: 'Organic Apples', category: 'Fruits', price: 120, stock: 150, supplier: 'Green Farms' },
-    { _id: '2', name: 'Whole Wheat Bread', category: 'Bakery', price: 40, stock: 45, supplier: 'Daily Bake' },
-    { _id: '3', name: 'Almond Milk', category: 'Dairy', price: 150, stock: 80, supplier: 'Nutty Co.' },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const handleAddProduct = (data: any) => {
-    setProducts([...products, { ...data, _id: Date.now().toString() }]);
+  const loadProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      setProducts(data);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts(products.filter(p => p._id !== id));
+  const handleAddProduct = async (data: any) => {
+    try {
+      // Ensure numeric fields are parsed correctly
+      const payload = { ...data, price: Number(data.price), stock: Number(data.stock) };
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const newProduct = await res.json();
+      setProducts([...products, newProduct]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteProduct = async (id: string) => {
+    try {
+      await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      setProducts(products.filter(p => p._id !== id));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   useEffect(() => {
+    loadProducts();
     
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
