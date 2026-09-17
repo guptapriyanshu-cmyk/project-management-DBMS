@@ -51,6 +51,46 @@ def delete_product(id):
     db.products.delete_one({'_id': ObjectId(id)})
     return jsonify({"success": True})
 
+@app.route('/api/sales', methods=['GET'])
+def get_sales():
+    db = get_db()
+    sales = list(db.sales.find({}))
+    return jsonify([serialize_doc(s) for s in sales])
+
+@app.route('/api/sales', methods=['POST'])
+def add_sale():
+    db = get_db()
+    data = request.json
+    result = db.sales.insert_one(data)
+    data['_id'] = str(result.inserted_id)
+    return jsonify(data), 201
+
+@app.route('/api/sales/<id>', methods=['DELETE'])
+def delete_sale(id):
+    db = get_db()
+    db.sales.delete_one({'_id': ObjectId(id)})
+    return jsonify({"success": True})
+
+@app.route('/api/suppliers', methods=['GET'])
+def get_suppliers():
+    db = get_db()
+    suppliers = list(db.suppliers.find({}))
+    return jsonify([serialize_doc(s) for s in suppliers])
+
+@app.route('/api/suppliers', methods=['POST'])
+def add_supplier():
+    db = get_db()
+    data = request.json
+    result = db.suppliers.insert_one(data)
+    data['_id'] = str(result.inserted_id)
+    return jsonify(data), 201
+
+@app.route('/api/suppliers/<id>', methods=['DELETE'])
+def delete_supplier(id):
+    db = get_db()
+    db.suppliers.delete_one({'_id': ObjectId(id)})
+    return jsonify({"success": True})
+
 # Keep the old users route just in case
 @app.route('/api/users', methods=['GET'])
 def get_users():

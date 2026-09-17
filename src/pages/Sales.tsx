@@ -15,22 +15,53 @@ interface Sale {
 }
 
 const Sales = () => {
-  const [sales, setSales] = useState<Sale[]>([
-    { id: '1', orderId: 'ORD-8901', customerName: 'Rahul Sharma', amount: 1250.50, date: '2026-09-15', status: 'Completed' },
-  ]);
+  const [sales, setSales] = useState<Sale[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const handleAddSale = (data: any) => {
-    setSales([...sales, { ...data, id: Date.now().toString(), orderId: data.orderId || 'ORD-' + Math.floor(Math.random() * 10000), date: new Date().toISOString().split('T')[0], status: 'Completed' }]);
+  const loadSales = async () => {
+    try {
+      const res = await fetch('/api/sales');
+      const data = await res.json();
+      setSales(data);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const deleteSale = (id: string) => {
-    setSales(sales.filter(s => s.id !== id && (s as any)._id !== id));
+  const handleAddSale = async (data: any) => {
+    try {
+      const payload = {
+        ...data,
+        amount: Number(data.amount),
+        orderId: data.orderId || 'ORD-' + Math.floor(Math.random() * 10000),
+        date: new Date().toISOString().split('T')[0],
+        status: 'Completed'
+      };
+      const res = await fetch('/api/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const newSale = await res.json();
+      setSales([...sales, newSale]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteSale = async (id: string) => {
+    try {
+      await fetch(`/api/sales/${id}`, { method: 'DELETE' });
+      setSales(sales.filter(s => s._id !== id));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   useEffect(() => {
+    loadSales();
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
         { y: -20, opacity: 0 },

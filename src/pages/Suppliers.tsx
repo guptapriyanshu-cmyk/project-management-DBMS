@@ -15,23 +15,50 @@ interface Supplier {
 }
 
 const Suppliers = () => {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([
-    { id: '1', companyName: 'Green Farms Ltd', contactPerson: 'Ramesh Singh', category: 'Fruits & Veg', rating: 4.8, deliveryTime: '24 hrs' },
-    { id: '2', companyName: 'Daily Bake', contactPerson: 'Sunita Sharma', category: 'Bakery', rating: 4.5, deliveryTime: '12 hrs' },
-  ]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const handleAddSupplier = (data: any) => {
-    setSuppliers([...suppliers, { ...data, id: Date.now().toString(), rating: data.rating || 5.0 }]);
+  const loadSuppliers = async () => {
+    try {
+      const res = await fetch('/api/suppliers');
+      const data = await res.json();
+      setSuppliers(data);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const deleteSupplier = (id: string) => {
-    setSuppliers(suppliers.filter(s => s.id !== id && (s as any)._id !== id));
+  const handleAddSupplier = async (data: any) => {
+    try {
+      const payload = {
+        ...data,
+        rating: Number(data.rating || 5.0)
+      };
+      const res = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const newSupplier = await res.json();
+      setSuppliers([...suppliers, newSupplier]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteSupplier = async (id: string) => {
+    try {
+      await fetch(`/api/suppliers/${id}`, { method: 'DELETE' });
+      setSuppliers(suppliers.filter(s => s._id !== id));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   useEffect(() => {
+    loadSuppliers();
     if (headerRef.current) {
       gsap.fromTo(headerRef.current,
         { y: -20, opacity: 0 },
